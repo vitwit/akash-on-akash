@@ -28,17 +28,26 @@ def select_subset(values, amount):
   return result
 
 moniker = str(base64.b32encode(os.urandom(10)), 'ASCII')
+sys.stderr.write("Moniker: %s\n" % (moniker,))
 timeout = float(os.environ.get('HTTP_TIMEOUT', '30.0'))
-state_sync_enable = int(os.environ.get('STATE_SYNC', '1')) > 0
+# state_sync_enable = int(os.environ.get('STATE_SYNC', '1')) > 0
 pex_enable = int(os.environ.get('PEX', '1')) > 0
+private_peers = str(os.environ.get('PRIVATE_PEER_IDS',''))
+addr_book_strict = int(os.environ.get('ADDR_BOOK_STRICT', '1')) > 0
+peers_input = str(os.environ.get('PEERS',''))
+seeds_input = str(os.environ.get('SEEDS',''))
+seed_mode = int(os.environ.get('SEED_MODE', '0')) > 0
 
-seeds_url = os.environ['SEEDS_URL']
-sync_url = os.environ['SYNC_URL']
+seeds_url = os.environ.get('SEEDS_URL','')
+# sync_url = os.environ['SYNC_URL']
 
-sys.stderr.write("Fetching: %s\n" % (seeds_url,))
-with urllib.request.urlopen(seeds_url, timeout = timeout) as response:
-  seeds_data = str(response.read(), 'UTF-8')
-seeds = [y for y in (x.strip() for x in seeds_data.split("\n")) if len(y) != 0 ]
+if seeds_url:
+  sys.stderr.write("Fetching: %s\n" % (seeds_url,))
+  with urllib.request.urlopen(seeds_url, timeout = timeout) as response:
+    seeds_data = str(response.read(), 'UTF-8')
+  seeds = [y for y in (x.strip() for x in seeds_data.split("\n")) if len(y) != 0 ]
+else:
+  seeds=[]
 
 data = toml.load(sys.stdin)
 data['moniker'] = moniker
@@ -47,59 +56,62 @@ seeds_str = ','.join(seeds)
 for seed in seeds:
   sys.stderr.write("Using peer %s\n" % (seed,))
 
-data['p2p']['seeds'] = seeds_str
-data['p2p']['persistent_peers'] = seeds_str
+data['p2p']['seeds'] = seeds_str if seeds_str else seeds_input
+data['p2p']['persistent_peers'] = seeds_str if seeds_str else peers_input
 data['p2p']['pex'] = pex_enable
+data['p2p']['private_peer_ids'] = private_peers
+data['p2p']['addr_book_strict'] = addr_book_strict
+data['p2p']['seed_mode'] = seed_mode
 
-sync_servers = []
-if state_sync_enable:
-  sys.stderr.write("Fetching: %s\n" % (sync_url,))
-  with urllib.request.urlopen(sync_url, timeout = timeout) as response:
-    sync_data = str(response.read(), 'UTF-8')
+# sync_servers = []
+# if state_sync_enable:
+#   sys.stderr.write("Fetching: %s\n" % (sync_url,))
+#   with urllib.request.urlopen(sync_url, timeout = timeout) as response:
+#     sync_data = str(response.read(), 'UTF-8')
 
-  orig_sync_servers = [y for y in (x.strip() for x in sync_data.split("\n")) if len(y) != 0]
+#   orig_sync_servers = [y for y in (x.strip() for x in sync_data.split("\n")) if len(y) != 0]
 
-  sync_servers = []
-  for sync_server in orig_sync_servers:
-    _, server = sync_server.split('://')
-    sync_servers.append(server)
-  random.shuffle(sync_servers)
-  trust_height = None
-  trust_hash = None
-  for sync_server in sync_servers:
-    sys.stderr.write("Querying RPC server for latest block: %s\n" % (sync_server,))
-    cmd = 'akash'
-    args = ['', 'query', 'block', '--node','tcp://%s' % (sync_server,)]
-    with open('/tmp/blocks.json', 'w') as fout:
-      proc = subprocess.Popen(executable = cmd, args = args, stdin = subprocess.DEVNULL, stdout = fout, shell = False)
+#   sync_servers = []
+#   for sync_server in orig_sync_servers:
+#     _, server = sync_server.split('://')
+#     sync_servers.append(server)
+#   random.shuffle(sync_servers)
+#   trust_height = None
+#   trust_hash = None
+#   for sync_server in sync_servers:
+#     sys.stderr.write("Querying RPC server for latest block: %s\n" % (sync_server,))
+#     cmd = 'akash'
+#     args = ['', 'query', 'block', '--node','tcp://%s' % (sync_server,)]
+#     with open('/tmp/blocks.json', 'w') as fout:
+#       proc = subprocess.Popen(executable = cmd, args = args, stdin = subprocess.DEVNULL, stdout = fout, shell = False)
 
-      retcode = proc.wait()
-    if retcode == 0:
-      with open('/tmp/blocks.json') as fin:
-        blocks_data = json.load(fin)
-      last_commit = blocks_data.get('block', {}).get('last_commit', {})
-      trust_height = last_commit.get('height')
-      trust_hash = last_commit.get('block_id', {}).get('hash')
-    if trust_hash is not None and trust_height is not None:
-      break
+#       retcode = proc.wait()
+#     if retcode == 0:
+#       with open('/tmp/blocks.json') as fin:
+#         blocks_data = json.load(fin)
+#       last_commit = blocks_data.get('block', {}).get('last_commit', {})
+#       trust_height = last_commit.get('height')
+#       trust_hash = last_commit.get('block_id', {}).get('hash')
+#     if trust_hash is not None and trust_height is not None:
+#       break
 
-  if trust_hash is None or trust_height is None:
-    sys.stderr.write("Could not query an RPC node to get current blockchain height\n")
-    sys.exit(1)
-  trust_height = int(trust_height)
-  sys.stderr.write("Latest block is %d:%s\n" % (trust_height, trust_hash,))
+#   if trust_hash is None or trust_height is None:
+#     sys.stderr.write("Could not query an RPC node to get current blockchain height\n")
+#     sys.exit(1)
+#   trust_height = int(trust_height)
+#   sys.stderr.write("Latest block is %d:%s\n" % (trust_height, trust_hash,))
 
-  sync_servers_str = ','.join('http://%s' % (x,) for x in sync_servers)
+#   sync_servers_str = ','.join('http://%s' % (x,) for x in sync_servers)
 
-  data['statesync'] = {
-    'enable': True,
-    'rpc_servers': sync_servers_str,
-    'trust_height': trust_height,
-    'trust_hash':  trust_hash,
-    'trust_period': "168h0m0s"
-  }
-else:
-  data['statesync'] = {'enable': False}
+#   data['statesync'] = {
+#     'enable': True,
+#     'rpc_servers': sync_servers_str,
+#     'trust_height': trust_height,
+#     'trust_hash':  trust_hash,
+#     'trust_period': "168h0m0s"
+#   }
+# else:
+#   data['statesync'] = {'enable': False}
 
 
 toml.dump(data, sys.stdout)

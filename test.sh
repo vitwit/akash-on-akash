@@ -2,6 +2,6 @@
 docker run \
   --env-file env/definet \
   --publish-all \
-  --name akash-on-akash \
+  --name sentinel-on-akash \
   --rm \
-  akash-on-akash:local
+  sentinel-on-akash:latest

@@ -3,20 +3,13 @@ version: "2.0"
 
 services:
   akash:
-    image: ghcr.io/ovrclk/akash-on-akash:v0.0.5
+    image: akhilkumar7947/sentinel-on-akash:v0.0.5
     env:
-      # - STATE_SYNC=1
-      - SEEDS_URL=https://raw.githubusercontent.com/ovrclk/net/master/mainnet/seed-nodes.txt
-      - SYNC_URL=https://raw.githubusercontent.com/ovrclk/net/master/mainnet/rpc-nodes.txt
-      - GENESIS_URL=https://raw.githubusercontent.com/ovrclk/net/master/mainnet/genesis.json
-      - ENABLE_ID_SERVER=true
-      # - AKASH_PRUNING=custom
-      # - AKASH_PRUNING_INTERVAL=10
-      # - AKASH_PRUNING_KEEP_EVERY=50
-      # - AKASH_PRUNING_KEEP_RECENT=10
-      # - AKASH_STATE_SYNC_SNAPSHOT_INTERVAL=50
-      # - AKASH_STATE_SYNC_KEEP_RECENT=10
-      # - AKASH_SEED_MODE=true
+      - GENESIS_URL=https://raw.githubusercontent.com/sentinel-official/launch/sentinelhub-1/sentinelhub-1/genesis.json
+      - PEX=1
+      - SEEDS=c7859082468bcb21c914e9cedac4b9a7850347de@167.71.28.11:26656
+      - PEERS=c7859082468bcb21c914e9cedac4b9a7850347de@167.71.28.11:26656
+      - PRIVATE_PEER_IDS=6305ea07e56c76c995659369bf23db9de111ab23
     expose:
       - port: 8080
         as: 80

@@ -1,5 +1,4 @@
-FROM ghcr.io/ovrclk/akash:0.10.1
-LABEL org.opencontainers.image.source https://github.com/ovrclk/akash-on-akash
+FROM akhilkumar7947/sentinelhub:v0.0.5
 
 EXPOSE 8080
 EXPOSE 26656
@@ -7,7 +6,11 @@ EXPOSE 26657
 EXPOSE 1317
 EXPOSE 9090
 
-RUN apt-get update && apt-get install --no-install-recommends --assume-yes ca-certificates python3 python3-toml p7zip-full curl && apt-get clean
+ENV PACKAGES curl make libc-dev bash gcc linux-headers python3 py3-pip p7zip
+RUN apk add --no-cache $PACKAGES
+
+RUN apk add --update ca-certificates
+RUN pip3 install toml
 
 RUN mkdir /node
 
