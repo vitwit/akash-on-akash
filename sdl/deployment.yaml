@@ -10,6 +10,7 @@ services:
       - SEEDS=c7859082468bcb21c914e9cedac4b9a7850347de@167.71.28.11:26656
       - PEERS=c7859082468bcb21c914e9cedac4b9a7850347de@167.71.28.11:26656
       - PRIVATE_PEER_IDS=6305ea07e56c76c995659369bf23db9de111ab23
+      - CLI_NAME=sentinelhubcli
     expose:
       - port: 8080
         as: 80
