@@ -3,14 +3,16 @@ version: "2.0"
 
 services:
   akash:
-    image: akhilkumar7947/sentinel-on-akash:v0.0.5
+    image: akhilkumar7947/regen-on-akash:v1.0.0
     env:
-      - GENESIS_URL=https://raw.githubusercontent.com/sentinel-official/launch/sentinelhub-1/sentinelhub-1/genesis.json
+      - GENESIS_URL=https://raw.githubusercontent.com/regen-network/mainnet/main/regen-1/genesis.json
       - PEX=1
-      - SEEDS=c7859082468bcb21c914e9cedac4b9a7850347de@167.71.28.11:26656
-      - PEERS=c7859082468bcb21c914e9cedac4b9a7850347de@167.71.28.11:26656
-      - PRIVATE_PEER_IDS=6305ea07e56c76c995659369bf23db9de111ab23
-      - CLI_NAME=sentinelhubcli
+      - SEEDS=69975e7afdf731a165e40449fcffc75167a084fc@104.131.169.70:26656
+      - PEERS=69975e7afdf731a165e40449fcffc75167a084fc@104.131.169.70:26656
+      - PRIVATE_PEER_IDS=8ff88ddff8320066ed57a165846c1df89650ed67
+      - ADDR_BOOK_STRICT=1
+      - CLI_NAME=regen
+      - STATE_SYNC=0
     expose:
       - port: 8080
         as: 80
@@ -49,7 +51,7 @@ profiles:
       pricing:
         akash: 
           denom: uakt
-          amount: 100
+          amount: 50
 
 deployment:
   akash:

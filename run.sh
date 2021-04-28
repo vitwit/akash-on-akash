@@ -2,10 +2,11 @@
 
 pushd /node
 
-export SENTINEL_HOME="${PWD?}"
+export REGEN_HOME="${PWD?}"
+
 
 # This fails immediately, but creates the node keys
-sentinelhubd init "${SENTINEL_MONIKER:-unknown}" --home $SENTINEL_HOME
+regen init "${REGEN_MONIKER:-unknown}" --home $REGEN_HOME
 
 set -xe
 
@@ -15,12 +16,12 @@ set -xe
 #
 # - node-id in `.node_info.id`
 # - validator address in `.validator_info.address`,
-#   but it is in hex and `sentinelhubcli keys parse` is broken (again).
+#   but it is in hex and `regen keys parse` is broken (again).
 
 if test -n "$ENABLE_ID_SERVER" ; then
   mkdir web
-  sentinelhubd tendermint show-node-id   > web/node-id.txt
-  sentinelhubd tendermint show-validator > web/validator-pubkey.txt
+  regen tendermint show-node-id   > web/node-id.txt
+  regen tendermint show-validator > web/validator-pubkey.txt
   pushd web
   # Run a web server so that the file can be retrieved
   python3 -m http.server 8080 &
@@ -34,9 +35,5 @@ cat config.toml | python3 -u ./patch_config_toml.py > config/config.toml
 # Copy over all the other files that the node needs
 cp -v app.toml config/
 
-rm config.toml app.toml
-
-sentinelhubcli rest-server --laddr tcp://0.0.0.0:1317 &
-
 # Run the node for real now 
-exec sentinelhubd start --home $SENTINEL_HOME
+exec regen start --home $REGEN_HOME

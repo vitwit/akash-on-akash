@@ -30,7 +30,7 @@ def select_subset(values, amount):
 moniker = str(base64.b32encode(os.urandom(10)), 'ASCII')
 sys.stderr.write("Moniker: %s\n" % (moniker,))
 timeout = float(os.environ.get('HTTP_TIMEOUT', '30.0'))
-state_sync_enable = int(os.environ.get('STATE_SYNC', '1')) > 0
+state_sync_enable = int(os.environ.get('STATE_SYNC', '0')) > 0
 pex_enable = int(os.environ.get('PEX', '1')) > 0
 private_peers = str(os.environ.get('PRIVATE_PEER_IDS',''))
 addr_book_strict = int(os.environ.get('ADDR_BOOK_STRICT', '1')) > 0

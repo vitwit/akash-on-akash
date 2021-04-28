@@ -2,6 +2,6 @@
 docker run \
   --env-file env/definet \
   --publish-all \
-  --name sentinel-on-akash \
+  --name regen-on-akash \
   --rm \
-  sentinel-on-akash:latest
+  regen-on-akash:latest
